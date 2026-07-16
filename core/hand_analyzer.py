@@ -1,8 +1,10 @@
 from core.hand_math import HandMath
 from core.landmarks import *
 
-THUMB_OPEN_ANGLE = 150
+THUMB_OPEN_ANGLE = 148
 FINGER_OPEN_ANGLE = 160
+THUMB_DOMINANT_MCP_ANGLE = 148
+THUMB_SUPPORT_IP_ANGLE = 135
 
 class HandAnalyzer:
 
@@ -25,6 +27,14 @@ class HandAnalyzer:
                     THUMB_MCP,
                     THUMB_IP,
                     THUMB_TIP
+                ),
+
+            "thumb_base":
+                HandMath.finger_angle(
+                    landmarks,
+                    THUMB_CMC,
+                    THUMB_MCP,
+                    THUMB_IP
                 ),
 
             "index":
@@ -59,14 +69,23 @@ class HandAnalyzer:
                     PINKY_TIP
                 ),
         }
-        features["states"] = {
 
-            finger: (
-                angle > THUMB_OPEN_ANGLE
-                if finger == "thumb"
-                else angle > FINGER_OPEN_ANGLE
+        thumb_tip_angle = features["angles"]["thumb"]
+        thumb_base_angle = features["angles"]["thumb_base"]
+
+        thumb_open = (
+            thumb_base_angle > THUMB_DOMINANT_MCP_ANGLE
+            or (
+                thumb_base_angle > THUMB_SUPPORT_IP_ANGLE
+                and thumb_tip_angle > THUMB_OPEN_ANGLE
             )
+        )
 
-            for finger, angle in features["angles"].items()
+        features["states"] = {
+            "thumb": thumb_open,
+            "index": features["angles"]["index"] > FINGER_OPEN_ANGLE,
+            "middle": features["angles"]["middle"] > FINGER_OPEN_ANGLE,
+            "ring": features["angles"]["ring"] > FINGER_OPEN_ANGLE,
+            "pinky": features["angles"]["pinky"] > FINGER_OPEN_ANGLE,
         }
         return features

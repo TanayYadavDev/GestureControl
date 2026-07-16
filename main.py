@@ -5,11 +5,13 @@ from core.camera import Camera
 from core.hand_detector import HandDetector
 from core.hand_analyzer import HandAnalyzer
 from gestures.recognizer import GestureRecognizer
+from gestures.gesture import NO_HAND_GESTURE
 
 camera = Camera()
 detector = HandDetector()
 analyzer = HandAnalyzer()
 recognizer = GestureRecognizer()
+supported_gestures = [gesture.name for gesture in recognizer.database.gestures]
 
 prev_time = time.time()
 
@@ -47,7 +49,7 @@ while True:
             gesture = recognizer.recognize(features)
 
     else:
-        gesture = "NO HAND"
+        gesture = NO_HAND_GESTURE
 
     # -------------------------
     # FPS
@@ -70,12 +72,22 @@ while True:
 
     cv2.putText(
         frame,
-        gesture,
+        f"Gesture: {gesture}",
         (20, 75),
-        cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.FONT_HERSHEY_SIMPLEX,   
         0.9,
         (255, 255, 0),
         2
+    )
+
+    cv2.putText(
+        frame,
+        "Supported: " + " | ".join(supported_gestures),
+        (20, 110),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.55,
+        (255, 255, 255),
+        1
     )
 
     cv2.imshow("Gesture Control", frame)
